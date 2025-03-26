@@ -1,0 +1,1 @@
+final String BASE_URL = "http://dinebd-socket-poc.18.140.136.82.sslip.io";
