@@ -1,13 +1,41 @@
+import 'dart:io';
 import 'dart:ui' as ui;
-
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: NeonGradientCard()));
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.teal,
+        title: Text(
+          'Dinebd Partner',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              disableBatteryOptimization(context);
+            },
+            icon: Icon(Icons.battery_unknown_outlined),
+            tooltip: "Battery Status",
+            color: Colors.white,
+          ),
+          SizedBox(width: 8), // Spacing for better UI
+        ],
+      ),
+      body: Center(child: NeonGradientCard()),
+    );
   }
 }
 
@@ -74,7 +102,8 @@ class _NeonCardState extends State<NeonCard> with SingleTickerProviderStateMixin
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    )..repeat(reverse: true);
+    )
+      ..repeat(reverse: true);
   }
 
   @override
@@ -122,37 +151,38 @@ class GlowRectanglePainter extends CustomPainter {
     const blurSigma = 50.0;
 
     final backgroundPaint =
-        Paint()
-          ..shader = ui.Gradient.radial(
-            Offset(size.width / 2, size.height / 2),
-            size.width * glowSpread,
-            [
-              Color.lerp(
-                firstColor,
-                secondColor,
-                progress,
-              )!.withOpacity(intensity),
-              Color.lerp(firstColor, secondColor, progress)!.withOpacity(0.0),
-            ],
-          )
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, blurSigma);
+    Paint()
+      ..shader = ui.Gradient.radial(
+        Offset(size.width / 2, size.height / 2),
+        size.width * glowSpread,
+        [
+          Color.lerp(
+            firstColor,
+            secondColor,
+            progress,
+          )!.withOpacity(intensity),
+          Color.lerp(firstColor, secondColor, progress)!.withOpacity(0.0),
+        ],
+      )
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, blurSigma);
     canvas.drawRect(rect.inflate(size.width * glowSpread), backgroundPaint);
 
-    final blackPaint = Paint()..color = Colors.black;
+    final blackPaint = Paint()
+      ..color = Colors.black;
     canvas.drawRRect(rrect, blackPaint);
 
     final glowPaint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..shader = LinearGradient(
-            colors: [
-              Color.lerp(firstColor, secondColor, progress)!,
-              Color.lerp(secondColor, firstColor, progress)!,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(rect);
+    Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..shader = LinearGradient(
+        colors: [
+          Color.lerp(firstColor, secondColor, progress)!,
+          Color.lerp(secondColor, firstColor, progress)!,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(rect);
 
     canvas.drawRRect(rrect, glowPaint);
   }
@@ -160,8 +190,8 @@ class GlowRectanglePainter extends CustomPainter {
   @override
   bool shouldRepaint(GlowRectanglePainter oldDelegate) =>
       oldDelegate.progress != progress ||
-      oldDelegate.intensity != intensity ||
-      oldDelegate.glowSpread != glowSpread;
+          oldDelegate.intensity != intensity ||
+          oldDelegate.glowSpread != glowSpread;
 }
 
 class GradientText extends StatelessWidget {
@@ -199,5 +229,22 @@ class GradientText extends StatelessWidget {
         textAlign: TextAlign.center,
       ),
     );
+  }
+}
+
+Future<void> disableBatteryOptimization(BuildContext context) async {
+  if (Platform.isAndroid) {
+    final status = await Permission.ignoreBatteryOptimizations.request();
+    if (status.isGranted) {
+      final intent = AndroidIntent(
+        action: 'android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS',
+        flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
+      );
+      await intent.launch();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Permission denied! Please allow manually."))
+      );
+    }
   }
 }

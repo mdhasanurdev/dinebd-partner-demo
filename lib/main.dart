@@ -29,6 +29,8 @@ Future<void> initializeService() async {
       autoStartOnBoot: true,
     ),
   );
+
+  // service.startService();
 }
 @pragma('vm:entry-point')
 Future<bool> onIosBackground(ServiceInstance service) async {
