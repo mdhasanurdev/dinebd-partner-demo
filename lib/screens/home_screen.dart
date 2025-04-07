@@ -1,12 +1,25 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +106,8 @@ class NeonCard extends StatefulWidget {
   _NeonCardState createState() => _NeonCardState();
 }
 
-class _NeonCardState extends State<NeonCard> with SingleTickerProviderStateMixin {
+class _NeonCardState extends State<NeonCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -102,8 +116,7 @@ class _NeonCardState extends State<NeonCard> with SingleTickerProviderStateMixin
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    )
-      ..repeat(reverse: true);
+    )..repeat(reverse: true);
   }
 
   @override
@@ -151,38 +164,37 @@ class GlowRectanglePainter extends CustomPainter {
     const blurSigma = 50.0;
 
     final backgroundPaint =
-    Paint()
-      ..shader = ui.Gradient.radial(
-        Offset(size.width / 2, size.height / 2),
-        size.width * glowSpread,
-        [
-          Color.lerp(
-            firstColor,
-            secondColor,
-            progress,
-          )!.withOpacity(intensity),
-          Color.lerp(firstColor, secondColor, progress)!.withOpacity(0.0),
-        ],
-      )
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, blurSigma);
+        Paint()
+          ..shader = ui.Gradient.radial(
+            Offset(size.width / 2, size.height / 2),
+            size.width * glowSpread,
+            [
+              Color.lerp(
+                firstColor,
+                secondColor,
+                progress,
+              )!.withOpacity(intensity),
+              Color.lerp(firstColor, secondColor, progress)!.withOpacity(0.0),
+            ],
+          )
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, blurSigma);
     canvas.drawRect(rect.inflate(size.width * glowSpread), backgroundPaint);
 
-    final blackPaint = Paint()
-      ..color = Colors.black;
+    final blackPaint = Paint()..color = Colors.black;
     canvas.drawRRect(rrect, blackPaint);
 
     final glowPaint =
-    Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..shader = LinearGradient(
-        colors: [
-          Color.lerp(firstColor, secondColor, progress)!,
-          Color.lerp(secondColor, firstColor, progress)!,
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ).createShader(rect);
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..shader = LinearGradient(
+            colors: [
+              Color.lerp(firstColor, secondColor, progress)!,
+              Color.lerp(secondColor, firstColor, progress)!,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ).createShader(rect);
 
     canvas.drawRRect(rrect, glowPaint);
   }
@@ -190,8 +202,8 @@ class GlowRectanglePainter extends CustomPainter {
   @override
   bool shouldRepaint(GlowRectanglePainter oldDelegate) =>
       oldDelegate.progress != progress ||
-          oldDelegate.intensity != intensity ||
-          oldDelegate.glowSpread != glowSpread;
+      oldDelegate.intensity != intensity ||
+      oldDelegate.glowSpread != glowSpread;
 }
 
 class GradientText extends StatelessWidget {
@@ -243,7 +255,7 @@ Future<void> disableBatteryOptimization(BuildContext context) async {
       await intent.launch();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Permission denied! Please allow manually."))
+        SnackBar(content: Text("Permission denied! Please allow manually.")),
       );
     }
   }
